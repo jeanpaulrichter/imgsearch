@@ -1,0 +1,155 @@
+<!--
+/**
+ * Copyright 2022 github.com/jeanpaulrichter
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+-->
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>ImageSearch</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="css/pickr.nano.min.css">
+    <script src="js/pickr.min.js"></script>
+    <script src="js/index.js" type="module"></script>
+    <link rel="icon" type="image/png" sizes="32x32" href="images/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="images/favicon-16x16.png">
+  </head>
+  <body>
+    <div id="main">
+      <div id="main_left">
+        <div id="panel_searchterms">
+          <div id="searchterms_mask" class="hidden"></div>
+          <textarea id="searchterms" spellcheck="false"></textarea>
+        </div>
+        <div id="splitter_left_vertical_1"></div>
+        <div id="panel_controls">
+          <div id="settings">
+            <div id="settings_mask" class="hidden"></div>
+            <div class="ctl-row">
+              <div class="ctl-col1">Source:</div>
+              <div class="ctl-col2">
+                <select id="source" class="ctl-select">
+                  <option value="google" selected>google</option>
+                  <option value="duckduckgo">duckduckgo</option>
+                </select>
+              </div>
+            </div>
+            <div class="ctl-row">
+              <div class="ctl-col1">Number of images:</div>
+              <div class="ctl-col2">
+                <select id="image_count" class="ctl-select">
+                  <option value="1">1</option>
+                  <option value="2" selected>2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                </select>
+              </div>
+            </div>
+            <div class="ctl-row">
+              <div class="ctl-col1">Output directory:</div>
+              <div class="ctl-col2">
+                <input type="text" id="output_dir" class="ctl-folder error-bg">
+              </div>
+            </div>
+            <div class="ctl-row">
+              <div class="ctl-col1">Output format:</div>
+              <div class="ctl-col2">
+                <select id="format" class="ctl-select">
+                  <option value="jpeg" selected>jpeg</option>
+                  <option value="png">png</option>
+                  <option value="webp">webp</option>
+                  <option value="gif">gif</option>
+                </select>
+              </div>
+            </div>
+            <div class="ctl-row">
+              <div class="ctl-col1">
+                <input type="checkbox" id="resize"  class="ctl-checkbox" checked>
+                <label for="resize">Resize</label>
+              </div>
+              <div class="ctl-col2 ctl-resize">
+                <div>
+                  <input type="text" id="resize_width" value="250" maxlength="4"> x 
+                  <input type="text" id="resize_height" value="250" maxlength="4">
+                </div>
+                <div>
+                  fit: <select id="resize_fit">
+                    <option value="cover" selected>cover</option>
+                    <option value="contain">contain</option>
+                    <option value="fill">fill</option>
+                  </select>
+                </div>
+                <button type="button" id="resize_color"></button>
+              </div>
+            </div>
+            <div class="ctl-row">
+              <div class="ctl-col1">
+                <input type="checkbox" id="auto" class="ctl-checkbox">
+                <label for="auto">Automatic mode (no user interaction)</label>
+              </div>
+              <div class="ctl-col2">
+              </div>
+            </div>
+          </div>
+          <div id="panel_controls_buttons">
+            <button type="button" id="btnStart">Start</button>
+            <button type="button" id="btnAbort" disabled>Abort</button>
+          </div>
+        </div>
+        <div id="panel_current">
+          <div id="current_filename"></div>
+          <div id="current_index"></div>
+          <div><input type="text" id="current_term" disabled></div>
+          <div>
+            <button type="button" id="btnChangeTerm" disabled>Search</button>
+            <button type="button" id="btnSkip" disabled>Skip</button>
+          </div>
+        </div>
+        <div id="splitter_left_vertical_2"></div>
+        <div id="panel_results">
+        </div>
+      </div>
+      <div id="splitter_horizontal"></div>
+      <div id="main_right">
+        <div id="panel_canvas">
+          <div id="canvas">
+            <canvas draggable="false"></canvas>
+            <div></div>
+          </div>
+        </div>
+        <div id="splitter_right_vertical"></div>
+        <div id="canvas_controls">
+          <div>
+            <button type="button" id="btnSave" disabled>Save</button>
+            <button type="button" id="btnClearCrop" disabled>Clear</button>
+          </div>
+          <div><a href="" id="info_url"></a></div>
+          <div id="info_mime"></div>
+          <div id="info_size"></div>
+          <div id="info_filesize"></div>
+        </div>        
+        <div id="panel_log">
+        </div>
+      </div>     
+    </div>
+  </body>
+</html>

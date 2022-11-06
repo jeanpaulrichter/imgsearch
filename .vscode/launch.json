@@ -1,0 +1,36 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "name": "nodemon",
+            "program": "${workspaceFolder}/debug/server.js",
+            "request": "launch",
+            "restart": true,
+            "runtimeExecutable": "${workspaceFolder}/node_modules/.bin/nodemon",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node",
+            "args": ["--watch", "${workspaceFolder}/debug/*.js"],
+            "cwd": "${workspaceFolder}/debug"
+        },
+        {
+            "name": "fuckoff",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",            
+            "program": "${workspaceFolder}/scripts/package.js",
+            "request": "launch",
+            "restart": true,
+            "runtimeExecutable": "node",
+            "skipFiles": [
+                "<node_internals>/**"
+            ],
+            "type": "node"
+        }
+    ]
+}

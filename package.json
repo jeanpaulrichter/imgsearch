@@ -1,0 +1,50 @@
+{
+  "name": "imgsearch",
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Bulk image download app",
+  "homepage": "https://github.com/jeanpaulrichter/imgsearch#readme",
+  "author": "jeanpaulrichter",
+  "license": "Apache-2.0",
+  "keywords": ["google", "image", "download", "search"],
+  "bin": "dist/server.cjs",
+  "exports": null,
+  "engines": {
+    "node": ">=14.16"
+  },
+  "scripts": {
+    "build": "node scripts/build.js",
+    "package": "node scripts/package.js"
+  },
+  "pkg": {
+    "assets": "dist/www/**/*",
+    "targets": [
+      "node18-win"
+    ],
+    "outputPath": "bin"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "follow-redirects": "^1.15.2",
+    "image-size": "^1.0.2",
+    "puppeteer": "^19.2.0",
+    "sharp": "^0.31.1"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "^9.0.2",
+    "@types/express": "^4.17.14",
+    "@types/follow-redirects": "^1.14.1",
+    "@types/puppeteer": "^5.4.7",
+    "@types/sharp": "^0.31.0",
+    "@typescript-eslint/eslint-plugin": "^5.40.1",
+    "@typescript-eslint/parser": "^5.40.1",
+    "eslint": "^8.26.0",
+    "nodemon": "^2.0.20",
+    "pkg": "^5.8.0",
+    "rollup": "^2.79.1",
+    "rollup-plugin-terser": "^7.0.2",
+    "sass": "^1.55.0",
+    "ts-node": "^10.9.1",
+    "typescript": "^4.8.4"
+  }
+}

@@ -1,0 +1,526 @@
+/**
+ * Copyright 2022 github.com/jeanpaulrichter
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+$panel_padding: 3px;
+$panel_margin: 8px;
+$results_padding: 3px;
+
+$color_canvas_sel: blue;
+$color_error_bg: #FFCCCC;
+$color_error: #CC0000;
+$color_warning: #EE4422;
+
+$color_window_bg: #e6e6fa;
+$color_panel_bg: white;
+$color_panel_mask: #e6e6fa;
+$color_controls_bg: white;
+$color_controls_border: rgb(92, 90, 90);
+$color_controls_hover: rgb(145, 170, 170);
+
+@font-face {
+    font-family: "lato";
+    src: url("fonts/Lato-Regular.ttf");
+}
+
+@font-face {
+    font-family: "lato-bold";
+    src: url("fonts/Lato-Bold.ttf");
+}  
+
+html {
+    font-size: 10px;
+}
+
+@media screen and (min-width: 1023px) {
+    html { font-size: 11px; }
+}
+@media screen and (min-width: 1100px) {
+    html { font-size: 12px; }
+}
+@media screen and (min-width: 1300px) {
+    html { font-size: 13px; }
+}
+@media screen and (min-width: 1600px) {
+    html { font-size: 14px; }
+}
+  
+.hidden {
+    display: none !important;
+}
+
+.error {
+    color: $color_error !important;
+}
+
+.error-bg {
+    background-color: $color_error_bg !important;
+}
+
+.warning {
+    color: $color_warning !important;
+}
+
+@mixin control() {
+    box-sizing: border-box;
+    background-color: $color_controls_bg;
+    border: 1px solid $color_controls_border;
+    outline: none;
+
+    &:focus {
+        outline: 1px solid $color_controls_border;
+    }
+
+    &:disabled {
+        opacity: 0.5;
+    }
+}
+
+@mixin buttons() {
+    button {
+        color: black;
+        font-family: "lato-bold";
+        font-size: 1.1rem;
+        user-select: none;
+
+        &:hover:enabled {
+            background-color: $color_controls_hover;
+        }
+
+        @include control();
+    }
+}
+
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus, 
+input:-webkit-autofill:active{
+    -webkit-box-shadow: 0 0 0 30px white inset !important;
+    box-shadow: 0 0 0 30px white inset !important;
+}
+
+body {
+    height: 100vh;
+    padding: 0;
+    margin: 0;
+    background-color: $color_window_bg;
+}
+  
+#main {
+    display: flex;
+    flex-direction: row;
+    height: 100%;
+
+    // left column
+    #main_left {
+        order: 1;
+        flex: 1 1 0;
+
+        min-width: 35rem;
+        min-height: 35rem;
+      
+        display: flex;
+        flex-direction: column;        
+    }
+
+    // horizontal splitter/resizer
+    #splitter_horizontal {
+        order: 2;
+        flex: 0 0 $panel_margin;
+
+        width: $panel_margin;
+        cursor: ew-resize;
+    }
+
+    // right column
+    #main_right {
+        order: 3;
+        flex: 1 1 0;
+
+        min-width: 35rem;
+        min-height: 35rem;
+
+        display: flex;
+        flex-direction: column;
+    }
+}
+  
+#panel_searchterms {
+    order: 1;
+    flex: 1 1 0;
+
+    position: relative;
+    min-height: 10rem;
+    background-color: $color_panel_bg;
+    padding: 0;
+    margin: $panel_margin 0 0 $panel_margin;
+
+    textarea {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        resize: none;
+        background-color: $color_controls_bg;
+        border: 0;
+        outline: none;
+    
+        &:focus {
+            outline: 1px solid $color_controls_border;
+        }
+    
+        &:disabled {
+            opacity: 0.5;
+        }
+    }
+
+    #searchterms_mask {
+        cursor: wait;
+        opacity: 50%;
+        background-color: $color_panel_mask;
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        z-index: 10;
+        margin: 0;
+    }
+}
+
+#splitter_left_vertical_1 {
+    order: 2;
+    flex: 0 0 $panel_margin;
+    height: $panel_margin;
+    cursor: ns-resize;
+}
+  
+#panel_controls {
+    order: 3;
+    flex: 0 0 0;
+
+    margin: 0 0 $panel_margin $panel_margin;
+    padding: $panel_padding;
+    font-family: "lato";
+    user-select: none;
+    background-color: $color_panel_bg;
+
+    #panel_controls_buttons {
+        margin-top: 1rem;
+
+        @include buttons();
+    }
+
+    #settings {
+        position: relative;
+
+        >div {
+            margin-bottom: 3px;
+        }
+    }
+
+    #settings_mask {
+        cursor: wait;
+        opacity: 50%;
+        background-color: $color_panel_mask;
+        width: calc(100% + $panel_padding * 2);
+        left: -$panel_padding;
+        height: calc(100% + $panel_padding);
+        top: -$panel_padding;
+        position: absolute;
+        z-index: 10;
+        margin: 0;
+    }
+
+    .ctl-row {
+        display: flex;
+        flex-direction: row;
+        height: 1.5rem;
+    }
+      
+    .ctl-col1 {
+        order: 1;
+        flex-shrink: 2;
+        flex-grow: 0;
+        min-width: 14rem;
+    }
+      
+    .ctl-col2 {
+        order: 2;
+        flex-shrink: 1;
+        flex-grow: 1;
+    }
+      
+    .ctl-folder {
+        width: 100%;
+        height: 100%;
+        max-width: 40rem;
+        font-size: 1rem;
+
+        @include control();
+    }
+    
+    .ctl-select {
+        width: 7rem;
+        font-size: 0.9rem;
+        height: 100%;
+
+        @include control();
+    }
+
+    .ctl-checkbox {
+        vertical-align: middle;
+
+        @include control();
+        outline: 0 !important;
+
+        &:focus {
+            box-shadow: rgba(0, 0, 0, 0.7) 0px 2px 2px;;
+        }
+    }
+
+    .ctl-resize {
+        display: flex;
+        flex-direction: row;
+        column-gap: 0.5rem;
+
+        input {
+            width: 3rem;
+            height: 100%;
+            font-size: 1rem;            
+    
+            @include control();
+        }
+
+        select {
+            width: 7rem;
+            height: 100%;
+            font-size: 0.9rem;
+    
+            @include control();
+        }
+    
+        button {
+            height: 100%;
+            aspect-ratio: 1 / 1;
+            background-color: white;
+        
+            @include control();
+        }
+    }
+}
+
+#panel_current {
+    order: 4;
+    flex: 0 0 0;
+
+    margin: 0 0 0 $panel_margin;
+    padding: $panel_padding;
+    background-color: $color_panel_bg;
+
+    display: flex;
+    flex-direction: row;
+
+    // filename
+    >div:nth-child(1) {
+        order: 1;
+        flex: 1 1 auto;
+
+        display: flex;
+        align-items: center;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        user-select: none;
+    }
+
+    // index
+    >div:nth-child(2) {
+        order: 2;
+        flex: 0 0 auto;
+
+        display: flex;
+        align-items: center;
+        padding-right: 1rem;
+        user-select: none;
+    }
+
+    // searchterm
+    >div:nth-child(3){
+        order: 3;
+        flex: 5 1 auto;
+
+        input {
+            width: 100%;
+            height: 100%;
+            font-size: 1.1rem;
+            
+            @include control();
+        }
+    }
+
+    // buttons
+    div:nth-child(4) {
+        order: 4;
+        flex: 0 0 auto;
+        padding-left: 3px;
+
+        @include buttons();
+    }
+}
+
+#splitter_left_vertical_2 {
+    order: 5;
+    flex: 0 0 $panel_margin;
+    height: $panel_margin;
+    cursor: ns-resize;
+}
+  
+#panel_results {
+    order: 6;
+    flex: 3 1 0;
+
+    min-height: 10rem;
+    background-color: $color_panel_bg;
+    margin: 0 0 $panel_margin $panel_margin;
+    padding: $panel_padding;
+    overflow: auto;
+
+    >div {
+        display: inline-block;
+        cursor: pointer;
+        position: relative;
+        padding: $results_padding;
+
+        &.selected {
+            box-shadow: rgba(0, 0, 0, 0.7) 0px 3px 10px;
+        }
+
+        span {
+            position:absolute;
+            bottom: 1rem;
+            right: 1rem;
+            font-size: 1rem;
+            text-shadow: 0 0 3px white, 0 0 3px white, 0 0 3px white, 0 0 3px white;          
+        }
+    }
+}
+  
+#panel_canvas {
+    order: 1;
+    flex: 5 1 0;
+
+    min-height: 10rem;
+    background-color: $color_panel_bg;
+    user-select: none;
+    position: relative;
+    margin: $panel_margin $panel_margin 0 0;
+    background-color: $color_panel_bg;
+
+    background-image: url(../images/canvas_back.png);
+    background-repeat: repeat;
+
+    .canvas--loaded {
+        cursor: crosshair;
+    }
+
+    #canvas {
+        position: absolute;
+    
+        canvas {
+            position: relative;
+            height: 100%;
+            width: 100%;
+        }
+    
+        div {
+            position: absolute;
+            opacity: 50%;
+            background-color: $color_canvas_sel;
+            z-index: 1;
+        }
+    }
+}
+
+#splitter_right_vertical {
+    order: 2;
+    flex: 0 0 $panel_margin;
+
+    cursor: ns-resize;
+    height: $panel_margin;
+}
+
+#canvas_controls {
+    order: 3;
+    flex-grow: 0;
+    flex-shrink: 0;
+
+    margin: 0 $panel_margin $panel_margin 0;
+    padding: $panel_padding;
+    background-color: $color_panel_bg;
+
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    column-gap: 0.5rem;
+
+    div:nth-child(1) {
+        order: 1;
+        @include buttons();
+        flex: 0 0 auto;
+    }
+
+    div:nth-child(2) {
+        order: 2;
+        flex: 1 1 auto;
+        text-align: center;
+        overflow: hidden;
+        white-space: nowrap;
+    }
+
+    div:nth-child(3) {
+        order: 3;
+        flex: 0 0 auto;
+    }
+
+    div:nth-child(4) {
+        order: 4;
+        flex: 0 0 auto;
+    }
+
+    div:nth-child(5) {
+        order: 5;
+        flex: 0 0 auto;
+    }
+}
+  
+#panel_log {
+    order: 4;
+    flex: 1 1 0;
+
+    min-height: 5rem;
+    background-color: $color_panel_bg;
+    padding: $panel_padding;
+    margin: 0 $panel_margin $panel_margin 0;
+    overflow-y: scroll;
+    overflow-x: hidden;
+
+    .log-time {
+        font-family: "Courier New", Courier, monospace;
+        font-size: 0.9em;
+    }
+
+    .log-msg {
+        font-size: 0.95em;
+        font-family: Helvetica, "Trebuchet MS", Verdana, sans-serif;
+        margin-left: 1rem;
+    }
+}
