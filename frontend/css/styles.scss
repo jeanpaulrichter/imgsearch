@@ -413,13 +413,16 @@ body {
         }
     }
 }
-  
+
+.canvas--loaded {
+    cursor: crosshair;
+}
+
 #panel_canvas {
     order: 1;
     flex: 5 1 0;
 
     min-height: 10rem;
-    background-color: $color_panel_bg;
     user-select: none;
     position: relative;
     margin: $panel_margin $panel_margin 0 0;
@@ -427,10 +430,6 @@ body {
 
     background-image: url(../images/canvas_back.png);
     background-repeat: repeat;
-
-    .canvas--loaded {
-        cursor: crosshair;
-    }
 
     #canvas {
         position: absolute;
