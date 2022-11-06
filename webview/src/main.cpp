@@ -129,7 +129,20 @@ int WINAPI WinMain(HINSTANCE hInt, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCm
 }
 
 #else
-int main() {
-    return 0;
+int main()
+{
+    std::string location;
+    if (!getLocation(location)) {
+        return 1;
     }
+
+    webview::webview w(false, nullptr);
+    w.set_title("ImgSearch");
+    w.set_size(800, 600, WEBVIEW_HINT_NONE);
+    w.navigate(location);
+    w.run();
+    w.terminate();
+
+    return 0;
+}
 #endif
