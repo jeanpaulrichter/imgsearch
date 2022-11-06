@@ -23,7 +23,7 @@ import type { SearchResult, ImageProvider } from "./types.js";
 export class GoogleSearch implements ImageProvider
 {
     private page: puppeteer.Page;
-    private resExclude = ['image', 'stylesheet', 'font', 'other'];
+    private resExclude = ["image", "stylesheet", "font", "other"];
     private regex_newlines = /\r\n?|\n/g;
     private regex_images = /\["(https:\/\/encrypted-[^,]+?)",\d+,\d+\],\["(http.+?)",(\d+),(\d+)\]/g;
 
@@ -41,9 +41,17 @@ export class GoogleSearch implements ImageProvider
 
         try {
             // trying to get rid of cookie banner...
-            // better international version needed...
             await this.page.goto("https://www.google.com/search?q=cool&tbm=isch&client=firefox-b-d&source=lnt", {waitUntil: "domcontentloaded"});
-            await this.page.click("button[aria-label='Alle akzeptieren']");
+            await this.page.evaluate(() => {
+                const el_forms = document.getElementsByTagName("FORM");
+                for(let i = 0; i < el_forms.length; i++) {
+                    const form = el_forms[i] as HTMLFormElement;
+                    if(form.action.substring(0, 26) == "https://consent.google.com") {
+                        form.submit();
+                        break;
+                    }
+                }
+            });
             await this.page.waitForNetworkIdle(); 
         } catch(err) {
             //
