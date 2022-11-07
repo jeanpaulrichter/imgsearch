@@ -17,11 +17,7 @@
     "package": "node scripts/package.js"
   },
   "pkg": {
-    "assets": "dist/www/**/*",
-    "targets": [
-      "node18-win"
-    ],
-    "outputPath": "bin"
+    "assets": "dist/www/**/*"
   },
   "dependencies": {
     "express": "^4.18.2",

@@ -1,11 +1,16 @@
 #include <iostream>
 #include <fstream>
 #include <string>
+#include <filesystem>
 #include "webview.h"
 
 #ifdef _WIN32
 #include <windows.h>
 #include <winuser.h>
+#else
+#include <unistd.h>
+#include <atomic>
+#include <sys/wait.h>
 #endif
 
 // Read port from config.ini & return location for webview
@@ -129,20 +134,46 @@ int WINAPI WinMain(HINSTANCE hInt, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCm
 }
 
 #else
+
+std::atomic<int> pid_server;
+
+void sigquitHandler(int signal_number)
+{
+    kill(pid_server, SIGTERM);
+    wait(nullptr);
+    _exit(10);
+}
+
 int main()
 {
     std::string location;
     if (!getLocation(location)) {
-        return 1;
+        exit(1);
     }
 
-    webview::webview w(false, nullptr);
-    w.set_title("ImgSearch");
-    w.set_size(800, 600, WEBVIEW_HINT_NONE);
-    w.navigate(location);
-    w.run();
-    w.terminate();
+    if(!std::filesystem::exists("server")) {
+        exit(2);
+    }
+    
+    signal(SIGQUIT, sigquitHandler);
 
-    return 0;
+    pid_server = fork();
+    if (pid_server == -1) {
+        exit(3);
+    } else if (pid_server > 0) {
+        sleep(1);
+        webview::webview w(false, nullptr);
+        w.set_title("ImgSearch");
+        w.set_size(800, 600, WEBVIEW_HINT_NONE);
+        w.navigate(location);
+        w.run();
+        w.terminate();
+        wait(nullptr);
+        return 0;
+    } else {
+        char* args[] = { NULL };
+        execve("server", args, nullptr);
+        exit(4);
+    }
 }
 #endif
