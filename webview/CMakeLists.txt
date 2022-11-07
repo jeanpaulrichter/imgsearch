@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.10)
 project(imgsearch VERSION 1.0)
 
 set(BUILD_SHARED_LIBS OFF)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED On)
 
 if ("${CMAKE_BINARY_DIR}" STREQUAL "${CMAKE_SOURCE_DIR}")
     message(FATAL_ERROR "In-source builds are not permitted!")
@@ -24,11 +26,10 @@ endif()
 add_executable(${PROJECT_NAME} ${SRC_FILES})
 
 target_include_directories(${PROJECT_NAME}
-    PUBLIC
-        ${CMAKE_CURRENT_BINARY_DIR}
     PRIVATE
         ${SOURCE_DIR}
 	    "${CMAKE_CURRENT_SOURCE_DIR}/libs/webview2/include"
+        "${CMAKE_CURRENT_SOURCE_DIR}/libs/webview/include"
 )
 
 if(WIN32)

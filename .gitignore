@@ -4,6 +4,7 @@ dist
 bin
 debug
 webview/obj
+webview/libs
 config.ini
 
 

@@ -2,14 +2,16 @@
 #include <fstream>
 #include <string>
 #include <filesystem>
-#include "webview.h"
+#include <webview.h>
+#include <atomic>
 
 #ifdef _WIN32
 #include <windows.h>
 #include <winuser.h>
+#include <stdlib.h>
+#include <signal.h>
 #else
 #include <unistd.h>
-#include <atomic>
 #include <sys/wait.h>
 #endif
 
@@ -92,6 +94,7 @@ bool getLocation(std::string& loc) {
 }
 
 #ifdef _WIN32
+
 int WINAPI WinMain(HINSTANCE hInt, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCmdShow)
 {
     STARTUPINFO si{};
@@ -101,6 +104,9 @@ int WINAPI WinMain(HINSTANCE hInt, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCm
     if (!getLocation(location)) {
         return 1;
     }
+    if (!std::filesystem::exists("server.exe")) {
+        return 2;
+    }
 
     wchar_t exe[] = L"server.exe";
 
@@ -108,9 +114,24 @@ int WINAPI WinMain(HINSTANCE hInt, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCm
     si.cb = sizeof(si);
     ZeroMemory(&pi, sizeof(pi));
 
-    if (!CreateProcess(NULL, exe, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
-        return 2;
+    HANDLE ghJob = CreateJobObject(NULL, NULL);
+    if(ghJob == NULL) {
+        return 3;
     }
+
+    JOBOBJECT_EXTENDED_LIMIT_INFORMATION jeli = { 0 };
+    jeli.BasicLimitInformation.LimitFlags = JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
+
+    if(!SetInformationJobObject(ghJob, JobObjectExtendedLimitInformation, &jeli, sizeof(jeli))) {
+        return 4;
+    }
+
+    if (!CreateProcess(NULL, exe, NULL, NULL, FALSE, CREATE_NO_WINDOW, NULL, NULL, &si, &pi)) {
+        return 3;
+    }
+    bool gotjob = AssignProcessToJobObject(ghJob, pi.hProcess);
+
+    CloseHandle(pi.hThread);
 
     webview::webview w(false, nullptr);
     w.set_title("ImgSearch");
@@ -124,9 +145,12 @@ int WINAPI WinMain(HINSTANCE hInt, HINSTANCE hPrevInst, LPSTR lpCmdLine, int nCm
 
     w.run();
     
-    TerminateProcess(pi.hProcess, 0);
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
+    if(!gotjob) {
+        TerminateProcess(pi.hProcess, 0);
+        WaitForSingleObject(pi.hProcess, 1000);
+    }
+
+    CloseHandle(pi.hProcess);    
 
     w.terminate();
 
@@ -168,6 +192,7 @@ int main()
         w.navigate(location);
         w.run();
         w.terminate();
+        kill(pid_server, SIGTERM);
         wait(nullptr);
         return 0;
     } else {
