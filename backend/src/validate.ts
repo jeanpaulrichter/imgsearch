@@ -15,7 +15,7 @@
  */
 
 import { InputError } from "./exceptions.js";
-import type { ImageTransform, ImageSource } from "./types.js"
+import { ImageTransform, ImageSource, ImageSourceSize } from "./types.js"
 
 /**
  * Used to validate client GET requests
@@ -42,6 +42,28 @@ export class GETValidator {
             throw new InputError("Invalid source");
         }
         return this.obj.source;
+    }
+
+    /**
+     * @returns Valid ImageSourceSize
+     * @throws InputError
+     */
+    public size(): ImageSourceSize {
+        if(typeof this.obj.size !== "string") {
+            throw new InputError("Missing source size");
+        }
+        switch(this.obj.size) {
+            case "all":
+                return ImageSourceSize.all;
+            case "large":
+                return ImageSourceSize.large;
+            case "medium":
+                return ImageSourceSize.medium;
+            case "small":
+                return ImageSourceSize.small;
+            default:
+                throw new InputError("Invalid image size");
+        }
     }
 
     /**

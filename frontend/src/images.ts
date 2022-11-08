@@ -46,7 +46,7 @@ export class ImageManager {
             this.clear();
             const timestamp = Date.now();
 
-            const url = `search?source=${this.settings.source}&term=${encodeURIComponent(term)}&max=${this.settings.image_count}`;  
+            const url = `search?source=${this.settings.source}&size=${this.settings.image_size}&term=${encodeURIComponent(term)}&max=${this.settings.image_count}`;  
             this.log.msg("Searching for \"" + term + "\"...");
 
             const res = await fetch(url);

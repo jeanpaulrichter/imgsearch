@@ -70,7 +70,7 @@ app.get("/image", async(req: express.Request, res: express.Response, next: expre
 app.get("/search", async(req: express.Request, res: express.Response, next: express.NextFunction) => {
     try {
         const query = new GETValidator(req.query);
-        const images = await scraper.search(query.source(), query.term(), query.max());
+        const images = await scraper.search(query.source(), query.size(), query.term(), query.max());
         res.set("Content-Type", "application/json").send(images);
     } catch(err) {
         next(err);

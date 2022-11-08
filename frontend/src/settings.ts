@@ -24,6 +24,7 @@ declare class Pickr {
 
 export class Settings {
     public source: ImageSource = "google";
+    public image_size: string = "";
     public image_count: number = 2;
     public output_dir: string = "";
     public format: ImageFormat = "jpeg";
@@ -37,6 +38,7 @@ export class Settings {
 
     private el = {
         "source": document.getElementById("source") as HTMLSelectElement,
+        "image_size": document.getElementById("image_size") as HTMLSelectElement,
         "image_count": document.getElementById("image_count") as HTMLSelectElement,
         "output_dir": document.getElementById("output_dir") as HTMLInputElement,
         "format": document.getElementById("format") as HTMLSelectElement,
@@ -99,6 +101,9 @@ export class Settings {
             throw new Error("Invalid image source");
         }
         this.source = this.el.source.value;
+
+        // Image size
+        this.image_size = this.el.image_size.value;
 
         // Image count
         this.image_count = Number.parseInt(this.el.image_count.value);

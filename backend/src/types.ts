@@ -42,8 +42,15 @@ export type ImageTransform = {
 
 export type ImageSource = "google" | "duckduckgo";
 
+export enum ImageSourceSize {
+    all,
+    large,
+    medium,
+    small
+}
+
 export interface ImageProvider {
     init(): Promise<void>;
     release(): Promise<void>;
-    search(term: string, max: number): Promise<SearchResult[]>;
+    search(term: string, size: ImageSourceSize, max: number): Promise<SearchResult[]>;
 }

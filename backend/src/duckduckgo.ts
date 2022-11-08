@@ -15,11 +15,7 @@
  */
 
 import * as puppeteer from "puppeteer";
-import type { SearchResult, ImageProvider } from "./types.js";
-
-const sleep = (milliseconds: number) => {
-return new Promise(resolve => setTimeout(resolve, milliseconds))
-}
+import { SearchResult, ImageProvider, ImageSourceSize } from "./types.js";
 
 /**
  * duckduckgo.com image scrape module
@@ -37,20 +33,21 @@ export class DuckDuckSearch implements ImageProvider
      * Init puppeteer page
      */
     public async init(): Promise<void> {
-        //await this.page.setRequestInterception(true);
-        //this.page.on("request", this.onRequest.bind(this));
+        await this.page.setRequestInterception(true);
+        this.page.on("request", this.onRequest.bind(this));
     }
 
     /**
      * Search for images on duckduckgo.com
      * @param term Search string
+     * @param size Image size
      * @param max Maximum number of images retured
      * @returns Array of search results
      */
-    public async search(term: string, max: number): Promise<SearchResult[]> {
+    public async search(term: string, size: ImageSourceSize, max: number): Promise<SearchResult[]> {
         const ret: SearchResult[] = [];
 
-        const url = `https://duckduckgo.com/?q=${encodeURIComponent(term)}&iar=images&iax=images&ia=images&atb=v343-1`;
+        const url = `https://duckduckgo.com/?q=${encodeURIComponent(term)}&iar=images&iax=images&ia=images&atb=v343-1${this.getSizeString(size)}`;
         await this.page.goto(url, {waitUntil: "domcontentloaded"});
 
         // There should be an easier way to do this...
@@ -122,7 +119,7 @@ export class DuckDuckSearch implements ImageProvider
     /**
      * Close puppeteer page
      */
-    public async release() {
+    public async release(): Promise<void> {
         if(!this.page.isClosed()) {
             await this.page.close();
         }
@@ -132,11 +129,29 @@ export class DuckDuckSearch implements ImageProvider
      * Intercept and abort http requests for images, fonts etc.
      * @param request HTTP request
      */
-    private onRequest(request: puppeteer.HTTPRequest) {
+    private onRequest(request: puppeteer.HTTPRequest): void {
         if (this.resExclude.includes(request.resourceType())) {
             request.abort();
         } else {
             request.continue();
+        }
+    }
+
+    /**
+     * Returns url component string for image size
+     * @param size Image size
+     * @returns url component string
+     */
+    private getSizeString(size: ImageSourceSize):string {
+        switch(size) {
+            case ImageSourceSize.large:
+                return "&iaf=size%3ALarge";
+            case ImageSourceSize.medium:
+                return "&iaf=size%3AMedium";
+            case ImageSourceSize.small:
+                return "&iaf=size%3ASmall";
+            default:
+                return "";
         }
     }
 }

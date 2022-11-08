@@ -17,7 +17,7 @@
 import * as puppeteer from "puppeteer";
 import { GoogleSearch } from "./google.js";
 import { DuckDuckSearch } from "./duckduckgo.js";
-import type { SearchResult, ImageSource, ImageProvider } from "./types.js";
+import type { SearchResult, ImageSource, ImageSourceSize, ImageProvider } from "./types.js";
 
 /**
  * Web image scraper. Used image source classes to do the work
@@ -49,12 +49,13 @@ export class Scraper
     /**
      * Search for image
      * @param source Image source
+     * @param size Image size
      * @param term Searchterm
      * @param max Maximum number of images to return
      * @returns Array of results
      */
-    public async search(source: ImageSource, term: string, max: number): Promise<SearchResult[]> {
-        return this.provider[source].search(term, max);
+    public async search(source: ImageSource, size: ImageSourceSize, term: string, max: number): Promise<SearchResult[]> {
+        return this.provider[source].search(term, size, max);
     }
 
     /**

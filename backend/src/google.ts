@@ -15,7 +15,7 @@
  */
 
 import * as puppeteer from "puppeteer";
-import type { SearchResult, ImageProvider } from "./types.js";
+import { SearchResult, ImageProvider, ImageSourceSize } from "./types.js";
 
 /**
  * Google.com image scrape module
@@ -61,13 +61,14 @@ export class GoogleSearch implements ImageProvider
     /**
      * Search for images on google.com
      * @param term Search string
+     * @param size Size of images
      * @param max Maximum number of images retured
      * @returns Array of search results
      */
-    public async search(term: string, max: number): Promise<SearchResult[]> {
+    public async search(term: string, size: ImageSourceSize, max: number): Promise<SearchResult[]> {
         const ret: SearchResult[] = [];
 
-        const url = `https://www.google.com/search?q=${encodeURIComponent(term)}&tbm=isch&client=firefox-b-d&source=lnt`;
+        const url = `https://www.google.com/search?q=${encodeURIComponent(term)}&tbm=isch&client=firefox-b-d&source=lnt${this.getSizeString(size)}`;
         await this.page.goto(url, {waitUntil: "domcontentloaded"});
 
         const html = (await this.page.content()).replace(this.regex_newlines, "");
@@ -103,6 +104,24 @@ export class GoogleSearch implements ImageProvider
             request.abort();
         } else {
             request.continue();
+        }
+    }
+
+    /**
+     * Returns url component string for image size
+     * @param size Image size
+     * @returns url component string
+     */
+    private getSizeString(size: ImageSourceSize) {
+        switch(size) {
+            case ImageSourceSize.large:
+                return "&tbs=isz:l";
+            case ImageSourceSize.medium:
+                return "&tbs=isz:m";
+            case ImageSourceSize.small:
+                return "&tbs=isz:i";
+            default:
+                return "";
         }
     }
 }
