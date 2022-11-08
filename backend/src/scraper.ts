@@ -16,6 +16,7 @@
 
 import * as puppeteer from "puppeteer";
 import { GoogleSearch } from "./google.js";
+import { DuckDuckSearch } from "./duckduckgo.js";
 import type { SearchResult, ImageSource, ImageProvider } from "./types.js";
 
 /**
@@ -40,6 +41,9 @@ export class Scraper
 
         this.provider.google = new GoogleSearch(await this.browser.newPage());
         this.provider.google.init();
+
+        this.provider.duckduckgo = new DuckDuckSearch(await this.browser.newPage());
+        this.provider.duckduckgo.init();
     }
 
     /**

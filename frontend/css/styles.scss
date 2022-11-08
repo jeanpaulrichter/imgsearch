@@ -411,6 +411,10 @@ body {
             font-size: 1rem;
             text-shadow: 0 0 3px white, 0 0 3px white, 0 0 3px white, 0 0 3px white;          
         }
+
+        img {
+            max-height: 250px;
+        }
     }
 }
 
