@@ -103,6 +103,26 @@ html {
     }
 }
 
+@mixin helpmask() {
+    z-index: 10;
+    font-size: 2rem;
+    font-family: "lato-bold";
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: default;
+    opacity: 60%;
+    background-color: $color_panel_mask;
+    padding: 0.5rem;
+    box-sizing: border-box;
+    position: absolute;
+    margin: 0;
+}
+
+.btn-selected {
+    background-color: $color_controls_hover !important;
+}
+
 input:-webkit-autofill,
 input:-webkit-autofill:hover, 
 input:-webkit-autofill:focus, 
@@ -195,6 +215,13 @@ body {
         z-index: 10;
         margin: 0;
     }
+
+    #searchterms_help {
+        width: 100%;
+        height: 100%;
+
+        @include helpmask();
+    }
 }
 
 #splitter_left_vertical_1 {
@@ -239,6 +266,15 @@ body {
         position: absolute;
         z-index: 10;
         margin: 0;
+    }
+
+    #settings_help {
+        width: calc(100% + $panel_padding * 2);
+        left: -$panel_padding;
+        height: calc(100% + $panel_padding);
+        top: -$panel_padding;
+
+        @include helpmask();
     }
 
     .ctl-row {
@@ -393,6 +429,16 @@ body {
     margin: 0 0 $panel_margin $panel_margin;
     padding: $panel_padding;
     overflow: auto;
+    position: relative;
+
+    #results_help {
+        width: 100%;
+        height: 100%;
+        top: 0;
+        left: 0;
+        
+        @include helpmask();
+    }
 
     >div {
         display: inline-block;
@@ -434,6 +480,12 @@ body {
 
     background-image: url(../images/canvas_back.png);
     background-repeat: repeat;
+
+    #canvas_help {
+        width: 100%;
+        height: 100%;
+        @include helpmask();
+    }
 
     #canvas {
         position: absolute;

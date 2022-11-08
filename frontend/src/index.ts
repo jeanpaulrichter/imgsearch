@@ -25,7 +25,8 @@ enum Button {
     abort = 1,
     change = 2,
     skip = 3,
-    save = 4
+    save = 4,
+    help = 5
 }
 
 export class ImageSearch {
@@ -44,7 +45,8 @@ export class ImageSearch {
             document.getElementById("btnAbort") as HTMLButtonElement,
             document.getElementById("btnChangeTerm") as HTMLButtonElement,
             document.getElementById("btnSkip") as HTMLButtonElement,
-            document.getElementById("btnSave") as HTMLButtonElement
+            document.getElementById("btnSave") as HTMLButtonElement,
+            document.getElementById("btnHelp") as HTMLButtonElement
         ];
 
         this.buttons[Button.start].addEventListener("click", this.onStart.bind(this))
@@ -52,7 +54,7 @@ export class ImageSearch {
         this.buttons[Button.skip].addEventListener("click", this.onSkip.bind(this));
         this.buttons[Button.change].addEventListener("click", this.onChangeTerm.bind(this));
         this.buttons[Button.save].addEventListener("click", this.onSave.bind(this));
-        
+        this.buttons[Button.help].addEventListener("click", this.onHelp.bind(this));
 
         document.getElementById("current_term")!.addEventListener("keyup", this.onKeyUpCurrentTerm.bind(this));
 
@@ -157,6 +159,28 @@ export class ImageSearch {
         el_btn.disabled = true;
         await this.images.save(this.list.filename());
         await this.nextSearch();
+    }
+
+    private onHelp(evt: Event) {
+        const el_btn = evt.target as HTMLButtonElement;
+        const el_terms = document.getElementById("searchterms_help") as HTMLDivElement;
+        const el_settings = document.getElementById("settings_help") as HTMLDivElement;
+        const el_results = document.getElementById("results_help") as HTMLDivElement;
+        const el_canvas = document.getElementById("canvas_help") as HTMLDivElement;
+
+        if(el_btn.classList.contains("btn-selected")) {
+            el_terms.classList.add("hidden");
+            el_settings.classList.add("hidden");
+            el_results.classList.add("hidden");
+            el_canvas.classList.add("hidden");
+            el_btn.classList.remove("btn-selected");
+        } else {
+            el_terms.classList.remove("hidden");
+            el_settings.classList.remove("hidden");
+            el_results.classList.remove("hidden");
+            el_canvas.classList.remove("hidden");
+            el_btn.classList.add("btn-selected");
+        }
     }
 }
 

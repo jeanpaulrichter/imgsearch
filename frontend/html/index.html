@@ -31,6 +31,7 @@
     <div id="main">
       <div id="main_left">
         <div id="panel_searchterms">
+          <div id="searchterms_help" class="hidden">Post your list of searchterms here. One term per line. If you want the filename to be different use: searchterm|filename</div>
           <div id="searchterms_mask" class="hidden"></div>
           <textarea id="searchterms" spellcheck="false"></textarea>
         </div>
@@ -38,6 +39,7 @@
         <div id="panel_controls">
           <div id="settings">
             <div id="settings_mask" class="hidden"></div>
+            <div id="settings_help" class="hidden">Select settings here :-)</div>
             <div class="ctl-row">
               <div class="ctl-col1">Source:</div>
               <div class="ctl-col2">
@@ -119,6 +121,7 @@
           <div id="panel_controls_buttons">
             <button type="button" id="btnStart">Start</button>
             <button type="button" id="btnAbort" disabled>Abort</button>
+            <button type="button" id="btnHelp">Help</button>
           </div>
         </div>
         <div id="panel_current">
@@ -132,11 +135,13 @@
         </div>
         <div id="splitter_left_vertical_2"></div>
         <div id="panel_results">
+          <div id="results_help" class="hidden">The results will be displayed here. If you want to try a different searchterm for the current file use the input box above.</div>
         </div>
       </div>
       <div id="splitter_horizontal"></div>
       <div id="main_right">
         <div id="panel_canvas">
+          <div id="canvas_help" class="hidden">In this panel you can select a crop area for the currently selected image if you want. Use the "Save" Button below to save file.</div>
           <div id="canvas">
             <canvas draggable="false"></canvas>
             <div></div>
