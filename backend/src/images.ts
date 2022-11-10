@@ -179,22 +179,17 @@ export class ImageCache {
                 } else if(res.headers["content-type"].substring(0, 6) !== "image/") {
                     reject("Not an image");
                 } else {
-                    const mime = res.headers["content-type"];
-    
                     res.on("data", chunk => {
                         buf.push(chunk);
                     });
                   
                     res.on("end", function () {
                         const data = Buffer.concat(buf);
-                        let type = mime.substring(6);
-                        if(type === "jpeg") {
-                            type = "jpg";
-                        }
                         const size = imageSize(data);
-                        if(size.type !== type || !size.width || !size.height || size.width == 0 || size.height == 0) {
+                        if(!size.type || !size.width || !size.height || size.width == 0 || size.height == 0) {
                             reject("Failed to parse image");
                         } else {
+                            let mime = "image/" + (size.type === "jpg") ? "jpeg" : size.type;
                             resolve({
                                 "mime": mime,
                                 "width": size.width,

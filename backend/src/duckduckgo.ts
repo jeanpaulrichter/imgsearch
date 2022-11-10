@@ -22,19 +22,20 @@ import { SearchResult, ImageProvider, ImageSourceSize } from "./types.js";
  */
 export class DuckDuckSearch implements ImageProvider
 {
-    private page: puppeteer.Page;
+    private page: puppeteer.Page | undefined;
+    private getPage: ()=>Promise<puppeteer.Page>;
     private resExclude = ["image", "stylesheet", "font", "other"];
 
-    constructor(page: puppeteer.Page) {
-        this.page = page;
+    constructor(getPage: ()=>Promise<puppeteer.Page>) {
+        this.getPage = getPage;
     }
 
     /**
      * Init puppeteer page
      */
     public async init(): Promise<void> {
-        await this.page.setRequestInterception(true);
-        this.page.on("request", this.onRequest.bind(this));
+        await this.setupPage();
+        console.log("Duckduckgo ready");
     }
 
     /**
@@ -47,70 +48,81 @@ export class DuckDuckSearch implements ImageProvider
     public async search(term: string, size: ImageSourceSize, max: number): Promise<SearchResult[]> {
         const ret: SearchResult[] = [];
 
-        const url = `https://duckduckgo.com/?q=${encodeURIComponent(term)}&iar=images&iax=images&ia=images&atb=v343-1${this.getSizeString(size)}`;
-        await this.page.goto(url, {waitUntil: "domcontentloaded"});
-
-        // There should be an easier way to do this...
-
-        await this.page.waitForSelector("div.tile", { "timeout": 1000 });
-        for(let i = 0; i < max; i++) {
-            const thumb_url = await this.page.evaluate((i: number) => {
-                const el_images = document.querySelectorAll("div.tile--img");
-                if(i < el_images.length) {
-                    const el_image = el_images[i] as HTMLElement;
-                    el_image.click();
-                    const el_img = el_image.querySelector("img");
-                    if(el_img) {
-                        return el_img.src;
-                    }
-                }
-            }, i);
-            if(!thumb_url) {
-                continue;
+        try {
+            if(!this.page || this.page.isClosed()) {
+                this.page = await this.setupPage();
             }
 
-            await this.page.waitForSelector("div.c-detail__filemeta", { "timeout": 500 });
-            const info = await this.page.evaluate(() => {
-                const fuck = document.querySelectorAll("div.detail__pane");
-                for(let x = 0; x < fuck.length; x++) {
-                    const el_pane = fuck[x] as HTMLDivElement;
-                    if(el_pane.style.transform == "translateX(0px)") {
-                        const el_detail = el_pane.querySelector("div.c-detail__filemeta");
-                        if(el_detail) {
-                            const el_a = el_detail.nextElementSibling;
-                            if(el_a) {
-                                return {
-                                    "size": el_detail.innerHTML,
-                                    "url": (el_a as HTMLLinkElement).href
+            const url = `https://duckduckgo.com/?q=${encodeURIComponent(term)}&iar=images&iax=images&ia=images&atb=v343-1${this.getSizeString(size)}`;
+            await this.page.goto(url, {
+                "waitUntil": "domcontentloaded",
+                "timeout": 5000
+            });
+    
+            // There should be an easier way to do this...
+    
+            await this.page.waitForSelector("div.tile", { "timeout": 1000 });
+            for(let i = 0; i < max; i++) {
+                const thumb_url = await this.page.evaluate((i: number) => {
+                    const el_images = document.querySelectorAll("div.tile--img");
+                    if(i < el_images.length) {
+                        const el_image = el_images[i] as HTMLElement;
+                        el_image.click();
+                        const el_img = el_image.querySelector("img");
+                        if(el_img) {
+                            return el_img.src;
+                        }
+                    }
+                }, i);
+                if(!thumb_url) {
+                    continue;
+                }
+    
+                await this.page.waitForSelector("div.c-detail__filemeta", { "timeout": 500 });
+                const info = await this.page.evaluate(() => {
+                    const fuck = document.querySelectorAll("div.detail__pane");
+                    for(let x = 0; x < fuck.length; x++) {
+                        const el_pane = fuck[x] as HTMLDivElement;
+                        if(el_pane.style.transform == "translateX(0px)") {
+                            const el_detail = el_pane.querySelector("div.c-detail__filemeta");
+                            if(el_detail) {
+                                const el_a = el_detail.nextElementSibling;
+                                if(el_a) {
+                                    return {
+                                        "size": el_detail.innerHTML,
+                                        "url": (el_a as HTMLLinkElement).href
+                                    }
                                 }
                             }
+                            break;
                         }
-                        break;
                     }
+                });
+                if(!info) {
+                    continue;
                 }
-            });
-            if(!info) {
-                continue;
+    
+                const tsplit = info.size.split("×");
+                if(tsplit.length !== 2) {
+                    continue;
+                }
+    
+                const width = Number.parseInt(tsplit[0]);
+                const height = Number.parseInt(tsplit[1]);
+    
+                if(Number.isNaN(width) || Number.isNaN(height) || width <= 0 || height <= 0) {
+                    continue;
+                }
+    
+                ret.push({
+                    "url": info.url,
+                    "thumb_url": thumb_url,
+                    "width": width,
+                    "height": height
+                });
             }
-
-            const tsplit = info.size.split("×");
-            if(tsplit.length !== 2) {
-                continue;
-            }
-
-            const width = Number.parseInt(tsplit[0]);
-            const height = Number.parseInt(tsplit[1]);
-
-            if(Number.isNaN(width) || Number.isNaN(height) || width <= 0 || height <= 0) {
-                continue;
-            }
-
-            ret.push({
-                "url": info.url,
-                "thumb_url": thumb_url,
-                "width": width,
-                "height": height
-            });
+        } catch(err) {
+            console.error((err instanceof Error) ? err.message : err);
         }
 
         return ret;
@@ -120,7 +132,7 @@ export class DuckDuckSearch implements ImageProvider
      * Close puppeteer page
      */
     public async release(): Promise<void> {
-        if(!this.page.isClosed()) {
+        if(this.page && !this.page.isClosed()) {
             await this.page.close();
         }
     }
@@ -152,6 +164,21 @@ export class DuckDuckSearch implements ImageProvider
                 return "&iaf=size%3ASmall";
             default:
                 return "";
+        }
+    }
+
+    /**
+     * Get puppeteer page
+     * @returns puppeteer page
+     */
+    private async setupPage(): Promise<puppeteer.Page> {
+        try {
+            this.page = await this.getPage();
+            await this.page.setRequestInterception(true);
+            this.page.on("request", this.onRequest.bind(this));
+            return this.page;
+        } catch(err) {
+            throw new Error("Failed to setup duckduckgo browser page: " + ((err instanceof Error) ? err.message : err));
         }
     }
 }

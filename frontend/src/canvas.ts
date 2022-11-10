@@ -89,7 +89,7 @@ export class ImageCanvas {
             "x": clientX - this.canvas_rect.left,
             "y": clientY - this.canvas_rect.top
         };
-        if(pos.x < 0) {
+        /*if(pos.x < 0) {
             pos.x = 0;
         }
         if(pos.y < 0) {
@@ -100,7 +100,7 @@ export class ImageCanvas {
         }
         if(pos.y >= this.canvas_rect.height) {
             pos.y = this.canvas_rect.height;
-        }
+        }*/
         return pos;
     }
 

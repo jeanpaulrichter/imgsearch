@@ -22,40 +22,22 @@ import { SearchResult, ImageProvider, ImageSourceSize } from "./types.js";
  */
 export class GoogleSearch implements ImageProvider
 {
-    private page: puppeteer.Page;
+    private page: puppeteer.Page | undefined;
+    private getPage: ()=>Promise<puppeteer.Page>;
     private resExclude = ["image", "stylesheet", "font", "other"];
     private regex_newlines = /\r\n?|\n/g;
     private regex_images = /\["(https:\/\/encrypted-[^,]+?)",\d+,\d+\],\["(http.+?)",(\d+),(\d+)\]/g;
 
-    constructor(page: puppeteer.Page) {
-        this.page = page;
+    constructor(getPage: ()=>Promise<puppeteer.Page>) {
+        this.getPage = getPage;
     }
 
     /**
      * Init puppeteer page
      */
     public async init(): Promise<void> {
-
-        await this.page.setRequestInterception(true);
-        this.page.on("request", this.onRequest.bind(this));
-
-        try {
-            // trying to get rid of cookie banner...
-            await this.page.goto("https://www.google.com/search?q=cool&tbm=isch&client=firefox-b-d&source=lnt", {waitUntil: "domcontentloaded"});
-            await this.page.evaluate(() => {
-                const el_forms = document.getElementsByTagName("FORM");
-                for(let i = 0; i < el_forms.length; i++) {
-                    const form = el_forms[i] as HTMLFormElement;
-                    if(form.action.substring(0, 26) == "https://consent.google.com") {
-                        form.submit();
-                        break;
-                    }
-                }
-            });
-            await this.page.waitForNetworkIdle(); 
-        } catch(err) {
-            //
-        }
+        this.page = await this.setupPage();
+        console.log("Google ready.");
     }
 
     /**
@@ -68,19 +50,30 @@ export class GoogleSearch implements ImageProvider
     public async search(term: string, size: ImageSourceSize, max: number): Promise<SearchResult[]> {
         const ret: SearchResult[] = [];
 
-        const url = `https://www.google.com/search?q=${encodeURIComponent(term)}&tbm=isch&client=firefox-b-d&source=lnt${this.getSizeString(size)}`;
-        await this.page.goto(url, {waitUntil: "domcontentloaded"});
+        try {
+            if(!this.page || this.page.isClosed()) {
+                this.page = await this.setupPage();
+            }
 
-        const html = (await this.page.content()).replace(this.regex_newlines, "");
-        const img_data = [...html.matchAll(this.regex_images)];
-
-        for(let i = 0; i < img_data.length && i < max; i++) {
-            ret.push({
-                "thumb_url": JSON.parse(`"${img_data[i][1]}"`),
-                "url": JSON.parse(`"${img_data[i][2]}"`),
-                "height": Number.parseInt(img_data[i][3]),
-                "width": Number.parseInt(img_data[i][4])
+            const url = `https://www.google.com/search?q=${encodeURIComponent(term)}&tbm=isch&client=firefox-b-d&source=lnt${this.getSizeString(size)}`;
+            await this.page.goto(url, {
+                "waitUntil": "domcontentloaded",
+                "timeout": 5000
             });
+
+            const html = (await this.page.content()).replace(this.regex_newlines, "");
+            const img_data = [...html.matchAll(this.regex_images)];
+
+            for(let i = 0; i < img_data.length && i < max; i++) {
+                ret.push({
+                    "thumb_url": JSON.parse(`"${img_data[i][1]}"`),
+                    "url": JSON.parse(`"${img_data[i][2]}"`),
+                    "height": Number.parseInt(img_data[i][3]),
+                    "width": Number.parseInt(img_data[i][4])
+                });
+            }
+        } catch(err) {
+            console.error((err instanceof Error) ? err.message : err);
         }
 
         return ret;
@@ -90,7 +83,7 @@ export class GoogleSearch implements ImageProvider
      * Close puppeteer page
      */
     public async release() {
-        if(!this.page.isClosed()) {
+        if(this.page && !this.page.isClosed()) {
             await this.page.close();
         }
     }
@@ -122,6 +115,37 @@ export class GoogleSearch implements ImageProvider
                 return "&tbs=isz:i";
             default:
                 return "";
+        }
+    }
+
+    private async setupPage(): Promise<puppeteer.Page> {
+        try {
+            if(this.page && !this.page.isClosed()) {
+                return this.page;
+            }
+            this.page = await this.getPage();
+            await this.page.setRequestInterception(true);
+            this.page.on("request", this.onRequest.bind(this));
+
+            // trying to get rid of cookie banner...
+            await this.page.goto("https://www.google.com/search?q=cool&tbm=isch&client=firefox-b-d&source=lnt", {
+                "waitUntil": "domcontentloaded",
+                "timeout": 3000            
+            });
+            await this.page.evaluate(() => {
+                const el_forms = document.getElementsByTagName("FORM");
+                for(let i = 0; i < el_forms.length; i++) {
+                    const form = el_forms[i] as HTMLFormElement;
+                    if(form.action.substring(0, 26) == "https://consent.google.com") {
+                        form.submit();
+                        break;
+                    }
+                }
+            });
+            await this.page.waitForNetworkIdle();
+            return this.page;
+        } catch(err) {
+            throw new Error("Failed to setup google browser page: " + ((err instanceof Error) ? err.message : err));
         }
     }
 }

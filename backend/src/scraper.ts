@@ -26,6 +26,7 @@ export class Scraper
 {
     private browser: puppeteer.Browser | null = null;
     private provider: {[key: string]: ImageProvider} = {};
+    private chromium: string = "";
 
     constructor() {}
 
@@ -34,15 +35,15 @@ export class Scraper
      * @param chromium_path Path to chromium for puppeteer to use
      */
     public async init(chromium_path: string) {
-        this.browser = await puppeteer.launch({
-            "headless": true,
-            "executablePath": chromium_path
-        });
+        this.chromium = chromium_path;
 
-        this.provider.google = new GoogleSearch(await this.browser.newPage());
+        const getPage = this.getPage.bind(this);
+        await this.launchBrowser();
+
+        this.provider.google = new GoogleSearch(getPage);
         this.provider.google.init();
 
-        this.provider.duckduckgo = new DuckDuckSearch(await this.browser.newPage());
+        this.provider.duckduckgo = new DuckDuckSearch(getPage);
         this.provider.duckduckgo.init();
     }
 
@@ -65,5 +66,20 @@ export class Scraper
         if(this.browser) {
             this.browser.close();
         }
+    }
+
+    private async getPage(): Promise<puppeteer.Page> {
+        if(this.browser == null || !this.browser.isConnected()) {
+            this.browser = await this.launchBrowser();
+        }
+        return await this.browser.newPage();
+    }
+
+    private async launchBrowser() {
+        this.browser = await puppeteer.launch({
+            "headless": true,
+            "executablePath": this.chromium
+        });
+        return this.browser;
     }
 }
