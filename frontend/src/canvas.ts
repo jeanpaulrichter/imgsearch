@@ -23,6 +23,7 @@ import { CanvasInfo } from "./canvas_info.js";
  */
 export class ImageCanvas {
     private image: HTMLImageElement;
+    private url: string;
     private ctx: CanvasRenderingContext2D;
     private image_info: CanvasInfo;
     private selection: CanvasSelection;
@@ -39,6 +40,7 @@ export class ImageCanvas {
     };
 
     constructor() {
+        this.url = "";
         this.visible = false;
         this.mouseDown = false;
         this.try_to_load = false;
@@ -63,8 +65,8 @@ export class ImageCanvas {
         this.el.canvas.width = image.width;
         this.el.canvas.height = image.height;
         this.try_to_load = true;
+        this.url = image.url;
         this.image.src = "image?url=" + encodeURIComponent(image.url);
-        this.image_info.set(image.url);
     }
 
     public getCropSelection(): Rect | undefined {
@@ -82,6 +84,7 @@ export class ImageCanvas {
         this.image.src = "";
         this.visible = false;
         this.image_info.clear();
+        this.url = "";
     }
 
     private getPosition(clientX: number, clientY: number): Point {
@@ -89,18 +92,6 @@ export class ImageCanvas {
             "x": clientX - this.canvas_rect.left,
             "y": clientY - this.canvas_rect.top
         };
-        /*if(pos.x < 0) {
-            pos.x = 0;
-        }
-        if(pos.y < 0) {
-            pos.y = 0;
-        }
-        if(pos.x >= this.canvas_rect.width) {
-            pos.x = this.canvas_rect.width;
-        }
-        if(pos.y >= this.canvas_rect.height) {
-            pos.y = this.canvas_rect.height;
-        }*/
         return pos;
     }
 
@@ -132,6 +123,7 @@ export class ImageCanvas {
         this.visible = true;
         this.mouseDown = false;
         this.el.parent.classList.add("canvas--loaded");
+        this.image_info.set(this.url);
     }
 
     private onImageError() {
