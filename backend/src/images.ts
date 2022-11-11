@@ -21,6 +21,53 @@ import { imageSize } from "image-size";
 import type { Image, ImageTransform } from "./types.js"
 import { NotFoundError } from "./exceptions.js"
 
+async function getFacebookURL(url: URL) {
+    return new Promise(function(resolve, reject) {
+        const options = {
+            "host": url.hostname,
+            "path": url.pathname + url.search,
+            "headers": {
+                "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0"
+            },
+            "maxRedirects": 6,
+            "timeout": 2000
+        };
+        const buf: any[] = [];
+        const req = http.https.request(options, res => {
+            if(res.statusCode !== 200) {
+                reject("Bad Status code: " + res.statusCode);
+            } else {
+                res.on("data", chunk => {
+                    buf.push(chunk);
+                });
+            
+                res.on("end", function () {
+                    const data = Buffer.concat(buf);
+                    try {
+                        fs.writeFile("test.html", data);
+                        const test = data.toString().match(/<img data-visualcompletion="media-vc-image[^>]+?src="([^"]+)[^>]+?>/g);
+                        let lol = true;
+                    } catch(err) {
+                        console.error(err instanceof Error ? err.message : err);
+                        reject("Failed parse image");
+                    }
+                });
+    
+                res.on("close", () => {
+                    if(!res.complete) {
+                        reject("Failed to complete request");
+                    }
+                });
+    
+                res.on("error", err => {
+                    reject(err);
+                });
+            }
+        });
+        req.end();
+    });
+}
+
 /**
  * Used to download and save images
  */
@@ -90,6 +137,8 @@ export class ImageCache {
             return false;
         }
     };
+
+
 
     private download(url: string): Promise<Image> {
         return new Promise(function(resolve, reject) {

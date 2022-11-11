@@ -15,7 +15,7 @@
  */
 
 import * as puppeteer from "puppeteer";
-import { SearchResult, ImageProvider, ImageSourceSize } from "./types.js";
+import { SearchResult, ImageProvider, ImageSourceSize, FBGetImageURL } from "./types.js";
 
 /**
  * Google.com image scrape module
@@ -24,12 +24,14 @@ export class GoogleSearch implements ImageProvider
 {
     private page: puppeteer.Page | undefined;
     private getPage: ()=>Promise<puppeteer.Page>;
+    private getFBImage: FBGetImageURL;
     private resExclude = ["image", "stylesheet", "font", "other"];
     private regex_newlines = /\r\n?|\n/g;
     private regex_images = /\["(https:\/\/encrypted-[^,]+?)",\d+,\d+\],\["(http.+?)",(\d+),(\d+)\]/g;
 
-    constructor(getPage: ()=>Promise<puppeteer.Page>) {
+    constructor(getPage: ()=>Promise<puppeteer.Page>, getFBImage: FBGetImageURL) {
         this.getPage = getPage;
+        this.getFBImage = getFBImage;
     }
 
     /**
@@ -64,13 +66,25 @@ export class GoogleSearch implements ImageProvider
             const html = (await this.page.content()).replace(this.regex_newlines, "");
             const img_data = [...html.matchAll(this.regex_images)];
 
-            for(let i = 0; i < img_data.length && i < max; i++) {
+            let count = 0;
+            for(let i = 0; i < img_data.length && count < max; i++) {
+                let url = JSON.parse(`"${img_data[i][2]}"`);
+
+                // stupid facebook image results...
+                if(url.substring(0, 27) == "https://lookaside.fbsbx.com") {
+                    url = await this.getFBImage(url);
+                    if(!url) {
+                        continue;
+                    }
+                }
+
                 ret.push({
                     "thumb_url": JSON.parse(`"${img_data[i][1]}"`),
-                    "url": JSON.parse(`"${img_data[i][2]}"`),
+                    "url": url,
                     "height": Number.parseInt(img_data[i][3]),
                     "width": Number.parseInt(img_data[i][4])
                 });
+                count++;
             }
         } catch(err) {
             console.error((err instanceof Error) ? err.message : err);

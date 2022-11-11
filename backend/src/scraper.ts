@@ -17,6 +17,7 @@
 import * as puppeteer from "puppeteer";
 import { GoogleSearch } from "./google.js";
 import { DuckDuckSearch } from "./duckduckgo.js";
+import { Facebook } from "./facebook.js";
 import type { SearchResult, ImageSource, ImageSourceSize, ImageProvider } from "./types.js";
 
 /**
@@ -27,6 +28,8 @@ export class Scraper
     private browser: puppeteer.Browser | null = null;
     private provider: {[key: string]: ImageProvider} = {};
     private chromium: string = "";
+
+    private facebook: Facebook | undefined;
 
     constructor() {}
 
@@ -40,7 +43,10 @@ export class Scraper
         const getPage = this.getPage.bind(this);
         await this.launchBrowser();
 
-        this.provider.google = new GoogleSearch(getPage);
+        this.facebook = new Facebook(getPage);
+        this.facebook.init();
+
+        this.provider.google = new GoogleSearch(getPage, this.facebook.getImageURL.bind(this.facebook));
         this.provider.google.init();
 
         this.provider.duckduckgo = new DuckDuckSearch(getPage);
@@ -77,7 +83,7 @@ export class Scraper
 
     private async launchBrowser() {
         this.browser = await puppeteer.launch({
-            "headless": true,
+            "headless": false,
             "executablePath": this.chromium
         });
         return this.browser;

@@ -54,3 +54,5 @@ export interface ImageProvider {
     release(): Promise<void>;
     search(term: string, size: ImageSourceSize, max: number): Promise<SearchResult[]>;
 }
+
+export type FBGetImageURL = (url:string)=>Promise<string|undefined>;
