@@ -91,69 +91,6 @@ export class ImageCache {
         }
     };
 
-    /**
-     * Download image
-     * @param url Image web url
-     * @returns Image
-     */
-    /*
-    private async download(url: string): Promise<Image> {
-
-        const ret = await got(url, {
-            "responseType": "buffer",
-            "headers": { "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0" }
-        });
-
-        if(ret.statusCode !== 200) {
-            throw new Error("HTTP status: " + ret.statusCode);
-        }
-        
-        const dimensions = imageSize(ret.rawBody);
-        if(!(dimensions.width && dimensions.height)) {
-            throw new Error("Failed to get image size");
-        }
-        const type = await fileTypeFromBuffer(ret.rawBody);
-        if(!type) {
-            throw new Error("Failed to determine file type");
-        }
-        if(type.mime.substring(0, 5) !== "image") { 
-            throw new Error("Content is no image");
-        }
-    
-        return {
-            "data": ret.rawBody,
-            "mime": type.mime,
-            "width": dimensions.width,
-            "height": dimensions.height
-        }
-        
-        
-
-        const ret = await superagent(url).set("User-Agent", "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:65.0) Gecko/20100101 Firefox/65.0");
-        if(ret.statusCode !== 200) {
-            throw new Error("HTTP status: " + ret.statusCode);
-        }
-        
-        const dimensions = imageSize(ret.body);
-        if(!(dimensions.width && dimensions.height)) {
-            throw new Error("Failed to get image size");
-        }
-        const type = await fileTypeFromBuffer(ret.body);
-        if(!type) {
-            throw new Error("Failed to determine file type");
-        }
-        if(type.mime.substring(0, 5) !== "image") { 
-            throw new Error("Content is no image");
-        }
-    
-        return {
-            "data": ret.body,
-            "mime": "asdf",
-            "width": dimensions.width,
-            "height": dimensions.height
-        }
-    }*/
-
     private download(url: string): Promise<Image> {
         return new Promise(function(resolve, reject) {
             const _url = new URL(url);
@@ -185,17 +122,22 @@ export class ImageCache {
                   
                     res.on("end", function () {
                         const data = Buffer.concat(buf);
-                        const size = imageSize(data);
-                        if(!size.type || !size.width || !size.height || size.width == 0 || size.height == 0) {
-                            reject("Failed to parse image");
-                        } else {
-                            let mime = "image/" + (size.type === "jpg") ? "jpeg" : size.type;
-                            resolve({
-                                "mime": mime,
-                                "width": size.width,
-                                "height": size.height,
-                                "data": data
-                            });
+                        try {
+                            const size = imageSize(data);
+                            if(!size.type || !size.width || !size.height || size.width == 0 || size.height == 0) {
+                                throw new Error("Invalid image size");
+                            } else {
+                                let mime = "image/" + (size.type === "jpg") ? "jpeg" : size.type;
+                                resolve({
+                                    "mime": mime,
+                                    "width": size.width,
+                                    "height": size.height,
+                                    "data": data
+                                });
+                            }
+                        } catch(err) {
+                            console.error(err instanceof Error ? err.message : err);
+                            reject("Failed parse image");
                         }
                     });
         
