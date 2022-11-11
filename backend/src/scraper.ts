@@ -83,7 +83,7 @@ export class Scraper
 
     private async launchBrowser() {
         this.browser = await puppeteer.launch({
-            "headless": false,
+            "headless": true,
             "executablePath": this.chromium
         });
         return this.browser;
